@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        String      @id
+  roleName  String
+  roleUsers RoleUsers[]
+}
+
+model RoleUsers {
+  id     String @id @default(uuid())
+  roleId String
+  userId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model User {
+  id          String      @id @default(uuid())
+  isActive    Boolean     @default(true)
+  FirstName   String
+  LastName    String
+  UserName    String      @unique
+  PhoneNumber String
+  Email       String      @unique
+  Password    String
+  Image       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  City        String
+  State       String
+  Country     String
+  Pincode     String
+  cars        Car[]
+  roleUsers   RoleUsers[]
+}
+
+model Car {
+  id               String  @id @default(uuid())
+  // 1. Basic Car Details
+  title            String? // "Maruti Swift 2019 VXI"
+  brand            String
+  model            String
+  variant          String? // "ZXI", "VXI"
+  year             Int
+  registrationYear Int?
+  vehicleType      String? // "Hatchback", "Sedan", "SUV"
+
+  // 2. Pricing
+  price         Float
+  discountPrice Float?
+  isNegotiable  Boolean @default(false)
+  originalPrice Float? // Keeping this as it was in original schema, might be same as price or MRP
+
+  // 3. Ownership & Documents
+  ownerNumber             Int? // 1, 2...
+  registrationNumber      String?
+  rcAvailable             Boolean   @default(false)
+  insuranceType           String? // "Zero Dep", "Comprehensive"
+  insuranceValidity       DateTime?
+  pucValidTill            DateTime?
+  serviceHistoryAvailable Boolean   @default(false)
+
+  // 4. Car Condition / Specs
+  kmDriven        Int? // Mapped from mileage or new field? User said "km_driven". Original had "mileage". Let's keep both or map. User listed "mileage" separately in specs.
+  fuelType        String?
+  transmission    String? // "Manual", "Automatic"
+  engineCapacity  String? // "1197cc"
+  mileage         Int? // User listed this in specs. In original it was Int.
+  color           String?
+  seatingCapacity Int?
+  doors           Int?
+  topSpeed        Float?
+  accidental      Boolean @default(false)
+  floodDamage     Boolean @default(false)
+
+  // 5. Features
+  features Json? // Changed from String[] to Json for structured features
+
+  // 6. Seller Details
+  sellerAddress String?
+  // sellerLocationLat Float?
+  // sellerLocationLng Float?
+
+  // 7. Media
+  mainImage String?
+  images    String?
+  videoUrl  String?
+
+  // 8. Status & Admin Fields
+  status     String  @default("active") // "active", "inactive", "sold"
+  featured   Boolean @default(false)
+  viewsCount Int     @default(0)
+
+  description String? // Made optional as it wasn't explicitly in "Basic Details" but was in original
+
+  vendorId  String
+  vendor    User     @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model Subscription {
+//   id String @id @default(uuid())
+//   name String
+//   description String
+//   amount Int
+//   currency String
+//   interval String
+//   productId String
+//   priceId String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   adminId String
+//   admin Admin @relation(fields: [adminId], references: [id])
+// }
+// model Admin{
+//   id String @id @default(uuid())
+//   name String
+//   email String @unique
+//   password String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   subscriptions Subscription[] 
+// }
+// model User{
+//   id String @id @default(uuid())
+//   name String
+//   email String @unique
+//   password String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   subscriptions String[]
+// }

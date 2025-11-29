@@ -1,0 +1,1 @@
+{"root":["./src/middleware.ts","./src/cars_database.ts","./src/client.ts","./src/index.ts","./src/uploadthing.ts","./src/controllers/car.ts","./src/controllers/vehicle.ts","./src/routes/vendor.ts"],"version":"5.9.3"}

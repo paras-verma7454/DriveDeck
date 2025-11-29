@@ -1,0 +1,96 @@
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/data-table";
+import { userColumns } from "@/components/user-columns";
+import type { User } from "@/components/user-columns";
+import { ENDPOINT_URL, useUser } from "@/hooks/user";
+import { toast } from "sonner";
+import axios from "axios";
+import { CreateUserDialog } from "@/components/CreateUserDialog";
+import { LoaderOneDemo } from "@/components/LoaderOne";
+import { VendorDashboard } from "./VendorDashboard";
+
+
+const Dashboard = () => {
+  const { role, user } = useUser();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const fetchUsers = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const response = await axios.get(`${ENDPOINT_URL}/v1/all/users`);
+      const data = response.data;
+      if (data.success && Array.isArray(data.users)) {
+        const filteredUsers = data.users.filter(
+          (u: User) => u.Email !== user?.Email
+        );
+        setUsers(filteredUsers);
+      } else {
+        throw new Error(data.message || "Unexpected response");
+      }
+    } catch (e) {
+      console.error(e);
+      setError(e instanceof Error ? e.message : String(e));
+      toast.error("Unable to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (role === "admin") {
+      fetchUsers();
+    } else if (role === "user") {
+      setLoading(false);
+    }
+  }, [role, user?.Email]); // Added user?.Email to dependencies
+
+  const handleCreateUser = () => {
+    setIsCreateDialogOpen(true);
+  };
+
+  if (role === "admin") {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Users</h2>
+          <Button className="cursor-pointer" onClick={handleCreateUser}>
+            Create New User
+          </Button>
+        </div>
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <LoaderOneDemo />
+          </div>
+        )}
+        {error && <p className="text-red-500">{error}</p>}
+        {!loading && !error && (
+          <DataTable
+            columns={userColumns}
+            data={users}
+            onRefresh={fetchUsers}
+          />
+        )}
+        <CreateUserDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onUserCreated={fetchUsers}
+        />
+      </div>
+    );
+  } else if (role === "vendor") {
+    return <VendorDashboard />;
+  } else {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoaderOneDemo />
+      </div>
+    );
+  }
+};
+
+export default Dashboard;
