@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";   
 import { Eye, Fuel, Gauge, Calendar, Zap } from "lucide-react";
 
 interface Car {
