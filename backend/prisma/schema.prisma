@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 model Role {
@@ -96,7 +96,7 @@ model Car {
 
   // 7. Media
   mainImage String?
-  images    String?
+  images    String[] @default([])
   videoUrl  String?
 
   // 8. Status & Admin Fields

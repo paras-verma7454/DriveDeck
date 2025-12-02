@@ -30,7 +30,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { Input } from "./ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -73,16 +72,57 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center py-4">
         {window.location.pathname === "/dashboard/users" && (
-          <Input
-            placeholder="Filter role..."
-            value={
-              (table.getColumn("roleName")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("roleName")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[150px] justify-start cursor-pointer">
+                {table.getColumn("roleName")?.getFilterValue() ? (
+                  <span>
+                    {
+                      table.getColumn("roleName")?.getFilterValue() as string
+                    }{" "}
+                    <span className="text-muted-foreground">role</span>
+                  </span>
+                ) : (
+                  "Filter role..."
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuCheckboxItem
+                checked={
+                  (table.getColumn("roleName")?.getFilterValue() as string) ===
+                  "user"
+                }
+                onCheckedChange={() =>
+                  table.getColumn("roleName")?.setFilterValue("user")
+                }
+              >
+                User
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={
+                  (table.getColumn("roleName")?.getFilterValue() as string) ===
+                  "vendor"
+                }
+                onCheckedChange={() =>
+                  table.getColumn("roleName")?.setFilterValue("vendor")
+                }
+              >
+                Vendor
+              </DropdownMenuCheckboxItem>
+              {(table.getColumn("roleName")?.getFilterValue() as string) && (
+                <>
+                  <DropdownMenuCheckboxItem
+                    onCheckedChange={() =>
+                      table.getColumn("roleName")?.setFilterValue(undefined)
+                    }
+                  >
+                    Clear
+                  </DropdownMenuCheckboxItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

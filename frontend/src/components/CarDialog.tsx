@@ -135,7 +135,7 @@ export function CarDialog({
 
     // Media
     mainImage: "",
-    images: "", // comma separated string for UI
+    images: [] as string[],
     videoUrl: "",
 
     // Admin
@@ -217,8 +217,10 @@ export function CarDialog({
         topSpeed: carToEdit.topSpeed?.toString() ?? "",
         viewsCount: carToEdit.viewsCount.toString(),
         images: Array.isArray(carToEdit.images)
-          ? carToEdit.images.join(", ")
-          : carToEdit.images || "",
+          ? carToEdit.images
+          : carToEdit.images
+          ? [carToEdit.images]
+          : [],
         features: parsedFeatures,
         insuranceValidity: carToEdit.insuranceValidity
           ? new Date(carToEdit.insuranceValidity).toISOString().split("T")[0]
@@ -275,11 +277,7 @@ export function CarDialog({
   const handleRemoveImage = (imageToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images
-        .split(",")
-        .map((i) => i.trim())
-        .filter((i) => i && i !== imageToRemove)
-        .join(", "),
+      images: prev.images.filter((i) => i !== imageToRemove),
     }));
   };
 
@@ -424,6 +422,7 @@ export function CarDialog({
       insuranceValidity: data.insuranceValidity || null,
       pucValidTill: data.pucValidTill || null,
       vendorId: data.vendorId || user?.id,
+      images: Array.isArray(data.images) ? data.images : [],
     };
   };
 
@@ -1264,13 +1263,11 @@ export function CarDialog({
                 <div className="grid gap-2">
                   <Label htmlFor="images">Images</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.images.split(",").map((img, index) => {
-                      const cleanImg = img.replace(/[{}]/g, "").trim();
-                      console.log("cleanImg",`${import.meta.env.VITE_IMG_URL}${cleanImg}`)
-                      if (!cleanImg) return null;
-                      const imageUrl = cleanImg.startsWith("http")
-                        ? cleanImg
-                        : `${import.meta.env.VITE_IMG_URL}${cleanImg}`;
+                    {formData.images.map((img, index) => {
+                      if (!img) return null;
+                      const imageUrl = img.startsWith("http")
+                        ? img
+                        : `${import.meta.env.VITE_IMG_URL}${img}`;
                       return (
                         <div key={index} className="relative group">
                           <img
@@ -1280,7 +1277,7 @@ export function CarDialog({
                           />
                           <button
                             type="button"
-                            onClick={() => handleRemoveImage(cleanImg)}
+                            onClick={() => handleRemoveImage(img)}
                             className="absolute cursor-pointer -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                             aria-label="Remove image"
                           >
@@ -1294,7 +1291,7 @@ export function CarDialog({
                     onUploadComplete={(url) => {
                       setFormData((prev) => ({
                         ...prev,
-                        images: prev.images ? `${prev.images}, ${url}` : url,
+                        images: [...prev.images, url],
                       }));
                       toast.success("Image uploaded successfully");
                     }}

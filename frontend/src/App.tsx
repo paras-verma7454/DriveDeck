@@ -3,6 +3,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { lazy } from "react";
+import { SectionCards } from "./components/SectionCards";
+import CarCard from "./components/CarCard";
 
 
 const Cars = lazy(() => import("./Pages/Dashboard/Cars"));
@@ -27,6 +29,10 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: "/cars",
+    element: <CarCard />,
+  },
+  {
     path: "/dashboard",
     element: <Home />,
     children: [
@@ -38,12 +44,15 @@ const router = createBrowserRouter([
         path: "/dashboard/account",
         element: <Account />,
       },{
-        path: "/dashboard/cars",
+        path: "/dashboard/cars",  
         element: <Cars />,
       },{
         path: "/dashboard/cars/:userCarsId",
         element: <Cars />,
-      },
+      },{
+        path: "/dashboard",
+        element: <SectionCards />,
+      }
     ],
   },
 ]);

@@ -50,7 +50,11 @@ export function AppSidebar() {
   return (
     <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader className="text-blue-400 text-xl text-center font-bold">
-       {open && <h1> DriveDeck</h1>}
+        {open ? "DriveDeck" : (
+          <div className="bg-linear-to-br from-indigo-500 to-purple-600 p-1 rounded-lg">
+            <Car className="text-white" size={24} />
+          </div>
+        )}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

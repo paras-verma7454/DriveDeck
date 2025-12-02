@@ -5,7 +5,7 @@ import { ArrowUpDown, Pencil, Trash } from "lucide-react";
 export type Car = {
   id: string;
   // Basic Car Details
-  title?: string;
+  title: string;
   brand: string;
   model: string;
   variant?: string;
@@ -91,10 +91,10 @@ export const getCarColumns = ({
     accessorKey: "model",
     header: "Model",
   },
-  // {
-  //   accessorKey: "variant",
-  //   header: "Variant",
-  // },
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
   // {
   //   accessorKey: "registrationYear",
   //   header: "Registration Year",
