@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { CreateUserDialog } from "@/components/CreateUserDialog";
 import { LoaderOneDemo } from "@/components/LoaderOne";
-import { VendorDashboard } from "./VendorDashboard";
+// import { VendorDashboard } from "./VendorDashboard";
 import { useNavigate } from "react-router-dom";
 
 

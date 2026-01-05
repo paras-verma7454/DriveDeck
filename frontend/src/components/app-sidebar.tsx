@@ -1,4 +1,4 @@
-import { Car, Home, Settings, User, UserPlus2 } from "lucide-react"
+import { Car, Home, User, UserPlus2 } from "lucide-react"
 
 import {
   Sidebar,
@@ -46,7 +46,7 @@ const items = [
 
 
 export function AppSidebar() {
-  const { role, user, loading} = useUser();
+  const { role, loading} = useUser();
   const {open}= useSidebar();
   const isActive = useLocation()
   // console.log("loc", isActive.pathname)
