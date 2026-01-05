@@ -13,6 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Link, useLocation } from "react-router-dom";
+import { useUser } from "@/hooks/user";
 
 // Menu items.
 const items = [
@@ -36,17 +37,29 @@ const items = [
     url: "/dashboard/account",
     icon: User,
   },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
+  // {
+  //   title: "Settings",
+  //   url: "#",
+  //   icon: Settings,
+  // },
 ]
 
+
 export function AppSidebar() {
+  const { role, user, loading} = useUser();
   const {open}= useSidebar();
   const isActive = useLocation()
   // console.log("loc", isActive.pathname)
+   if (loading) {
+    return null // or skeleton
+  }
+  const filteredItems = items.filter((item) => {
+    // Hide Users menu for vendor role
+    if (role === "vendor" && item.title === "Users") {
+      return false
+    }
+    return true
+  })
   return (
     <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader className="text-blue-400 text-xl text-center font-bold">
@@ -61,7 +74,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 
                 return (
                   <SidebarMenuItem key={item.title}>

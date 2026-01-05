@@ -9,6 +9,7 @@ import axios from "axios";
 import { CreateUserDialog } from "@/components/CreateUserDialog";
 import { LoaderOneDemo } from "@/components/LoaderOne";
 import { VendorDashboard } from "./VendorDashboard";
+import { useNavigate } from "react-router-dom";
 
 
 const Dashboard = () => {
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     setError(null);
@@ -83,7 +85,8 @@ const Dashboard = () => {
       </div>
     );
   } else if (role === "vendor") {
-    return <VendorDashboard />;
+    // return <VendorDashboard />;
+    navigate("/dashboard/cars");
   } else {
     return (
       <div className="flex justify-center items-center h-screen">

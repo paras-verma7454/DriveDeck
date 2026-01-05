@@ -20,7 +20,7 @@ import {
 import { useParams } from "react-router-dom";
 
 export const VendorDashboard = () => {
-  const { user, role } = useUser();
+  const { user, role,permissions } = useUser();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,9 +117,9 @@ export const VendorDashboard = () => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">My Cars</h2>
-        <Button className="cursor-pointer" onClick={handleAddCar}>
+        {permissions.includes("cars.create") && <Button className="cursor-pointer" onClick={handleAddCar}>
           Add New Car
-        </Button>
+        </Button>}
       </div>
       {loading && (
         <div className="flex justify-center items-center h-64">

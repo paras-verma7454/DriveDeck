@@ -22,12 +22,15 @@ export const user = async () => {
 export const useUser = () => {
   const [userData, setUserData] = useState<any>(null);
   const [roleData, setRoleData] = useState<any>('');
+  const [permissions, setPermissions] = useState<any>('');
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
     const data = await user();
     console.log("user:", data.user)
     console.log("role:", data.role.roleName)
+    console.log("permissions:", data.permissions)
+    setPermissions(data.permissions)
     setUserData(data.user);
     setRoleData(data.role.roleName);
     setLoading(false);
@@ -37,5 +40,13 @@ export const useUser = () => {
     fetchUser();
   }, []);
 
-  return { user: userData, role: roleData, loading, refetch: fetchUser };
+  return { user: userData, role: roleData, loading, refetch: fetchUser, permissions };
 };
+
+const permission = await axios.get(`${ENDPOINT_URL}/v1/permissions`, {
+            headers: {
+                authorization: `${localStorage.getItem("Authorization")}`
+            }
+})
+console.log("permissions:", permission.data)
+export const permissions = permission.data.permissions

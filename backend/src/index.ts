@@ -44,6 +44,22 @@ app.get("/v1/user",authMiddleware, async (req, res)=>{
                 id: user?.id as string
             }
         })
+        if(role?.roleName==="vendor"){
+            const permissions = await prisma.userPermission.findMany({
+                where:{
+                    userId: user?.id as string
+                },
+                include:{
+                    permission:true
+                }
+            })
+            return res.json({
+                success: true,
+                user: user,
+                role: role,
+                permissions: permissions.map((permission: any) => permission.permission?.key)
+            })
+        }
         res.json({
             success: true,
             user: user,
@@ -162,6 +178,74 @@ app.use("/v1/api/uploadthing/vendor", createRouteHandler({
       router: uploadRouter2,
     }),
 );
+
+app.get("/v1/permissions",async(req,res )=>{
+    const token = req.headers.authorization?.split(" ")[1] as string;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
+    const permissions = await prisma.user.findUnique({
+        where:{
+            id: decoded.userId
+        },
+        include:{
+            userPermissions:{
+                include:{
+                    permission:true
+                }
+            }
+        }
+    })
+    res.json({
+      success: true,
+      permissions:permissions?.userPermissions.map((userPermission: any) => userPermission.permission?.key),
+    })
+  })
+
+app.post("/v1/permission/:vendorId",async(req,res )=>{
+    const { vendorId } = req.params
+  const { permission } = req.body
+
+  const perm = await prisma.permission.findUnique({
+    where: { key: permission },
+  })
+
+  if (!perm) {
+    return res.status(400).json({ message: "Invalid permission" })
+  }
+
+  await prisma.userPermission.create({
+    data: {
+      userId: vendorId,
+      permissionId: perm.id,
+    },
+  })
+
+  res.json({ success: true })
+})
+
+app.put("/v1/permission/:vendorId", async(req, res)=>{
+  const { vendorId } = req.params
+  const { permissions } = req.body
+
+  // delete old
+  await prisma.userPermission.deleteMany({
+    where: { userId: vendorId },
+  })
+
+  const perms = await prisma.permission.findMany({
+    where: {
+      key: { in: permissions },
+    },
+  })
+
+  const perm = await prisma.userPermission.createMany({
+    data: perms.map((p) => ({
+      userId: vendorId,
+      permissionId: p.id,
+    })),
+  })
+
+  res.json({ success: true })
+})
 
 app.post("/v1/image",authMiddleware,async (req, res)=>{
     const {image,userId}= req.body;

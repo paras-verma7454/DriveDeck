@@ -45,7 +45,26 @@ model User {
   Pincode     String
   cars        Car[]
   roleUsers   RoleUsers[]
+  userPermissions UserPermission[]
 }
+
+model Permission {
+  id   String @id @default(uuid())
+  key  String @unique // cars.create, cars.edit, cars.delete
+  userPermissions UserPermission[]
+}
+
+model UserPermission {
+  id           String @id @default(uuid())
+  userId       String
+  permissionId String
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+}
+
 
 model Car {
   id               String  @id @default(uuid())
