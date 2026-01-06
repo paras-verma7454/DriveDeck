@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useUser, VITE_IMG_URL } from "@/hooks/user"
+import { useUser } from "@/context/UserContext";
+import {  VITE_IMG_URL } from "@/hooks/user"
 
 const Profile = () => {
   const { user } = useUser();

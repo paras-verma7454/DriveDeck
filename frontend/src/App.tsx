@@ -7,6 +7,7 @@ import { SectionCards } from "./components/SectionCards";
 import CarCard from "./components/CarCard";
 
 
+const Roles = lazy(() => import("./Pages/Dashboard/Roles"));
 const Cars = lazy(() => import("./Pages/Dashboard/Cars"));
 const Landing = lazy(() => import("./Pages/Landing"));
 const Login = lazy(() => import("./Pages/Login"));
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "/dashboard/users",
         element: <Dashboard />,
+      },
+      {
+        path: "/dashboard/roles",
+        element: <Roles />,
       },
       {
         path: "/dashboard/account",

@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ENDPOINT_URL, useUser } from "@/hooks/user";
+import { ENDPOINT_URL } from "@/hooks/user";
 import axios from "axios";
 import { toast } from "sonner";
 import { Country, State, City } from "country-state-city";
@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Upload } from "@/components/example-uploader";
+import { useUser } from "@/context/UserContext";
 
 const Account = () => {
    const { user } = useUser();

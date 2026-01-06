@@ -1,8 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Pencil, Trash } from "lucide-react";
-import { permissions } from "@/hooks/user";
-
+import { ArrowUpDown } from "lucide-react";
+import ActionCell from "./ActionCell";
 
 
 
@@ -46,6 +45,7 @@ export type Car = {
   floodDamage: boolean;
 
   // Features
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   features?: any; // JSON object
 
   // Seller Details
@@ -70,11 +70,15 @@ export type Car = {
 interface CarColumnsProps {
   onEdit: (car: Car) => void;
   onDelete: (car: Car) => void;
+  userPermissions: string[];
+  userLoading: boolean;
 }
 
 export const getCarColumns = ({
   onEdit,
   onDelete,
+  userPermissions,
+  userLoading,
 }: CarColumnsProps): ColumnDef<Car>[] => [
   {
     accessorKey: "brand",
@@ -188,29 +192,7 @@ export const getCarColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const car = row.original;
-      
-      return (
-        <div className="flex items-center space-x-2">
-          {permissions.includes("cars.edit") && <Button
-            className="cursor-pointer hover:text-blue-400"
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(car)}
-          >
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Edit car</span>
-          </Button>}
-          {permissions.includes("cars.delete") && <Button
-            className="cursor-pointer text-red-600 hover:text-red-700"
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(car)}
-          >
-            <Trash className="h-4 w-4" />
-            <span className="sr-only">Delete car</span>
-          </Button>}
-        </div>
-      );
+      return <ActionCell car={car} onEdit={onEdit} onDelete={onDelete} userPermissions={userPermissions} userLoading={userLoading} />;
     },
   },
 ];

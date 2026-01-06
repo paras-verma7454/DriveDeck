@@ -42,7 +42,7 @@ export function LoginForm() {
         Email: email,
         Password: password,
       });
-      console.log(response.data.user);
+      //console.log(response.data.user);
 
       if (response.data.token) {
         localStorage.setItem('Authorization', `Bearer ${response.data.token}`);

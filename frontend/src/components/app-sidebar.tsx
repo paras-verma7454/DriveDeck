@@ -13,7 +13,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Link, useLocation } from "react-router-dom";
-import { useUser } from "@/hooks/user";
+import { useUser } from "@/context/UserContext";
+import ShieldCheck from "./ui/shield-check";
 
 // Menu items.
 const items = [
@@ -37,11 +38,11 @@ const items = [
     url: "/dashboard/account",
     icon: User,
   },
-  // {
-  //   title: "Settings",
-  //   url: "#",
-  //   icon: Settings,
-  // },
+  {
+    title: "Role Management",
+    url: "/dashboard/roles",
+    icon: ShieldCheck,
+  },
 ]
 
 
@@ -49,13 +50,16 @@ export function AppSidebar() {
   const { role, loading} = useUser();
   const {open}= useSidebar();
   const isActive = useLocation()
-  // console.log("loc", isActive.pathname)
+  // //console.log("loc", isActive.pathname)
    if (loading) {
     return null // or skeleton
   }
   const filteredItems = items.filter((item) => {
     // Hide Users menu for vendor role
-    if (role === "vendor" && item.title === "Users") {
+    if (role === "vendor" && item.title === "Users" ) {
+      return false
+    }
+    if (role !== "admin" && item.title === "Role Management") {
       return false
     }
     return true

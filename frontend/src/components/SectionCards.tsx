@@ -31,9 +31,9 @@ export function  SectionCards() {
                         Authorization: `${localStorage.getItem("Authorization")}`,
                     },
                 });
-                // console.log("cars", data.data.cars);
+                // //console.log("cars", data.data.cars);
                 setCars(data.data.cars.length);
-                // console.log("users", usersData.data.users);
+                // //console.log("users", usersData.data.users);
                 setUsers(usersData.data.users.length);
                 setLoading(false);
             } catch (error) {

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
-import { ENDPOINT_URL, useUser } from "@/hooks/user";
+import { ENDPOINT_URL } from "@/hooks/user";
 import type { Car } from "./car-columns";
 import { Textarea } from "./ui/textarea";
 import { Upload2 } from "./example-uploader";
@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/context/UserContext";
 
 interface CarDialogProps {
   open: boolean;
@@ -65,7 +66,7 @@ export function CarDialog({
   const currentYear = new Date().getFullYear();
   const futureYearsOffset = 30; // e.g., allow up to 30 years in the future
   const maxYear = currentYear + futureYearsOffset;
-  // console.log("maxYear", maxYear);
+  // //console.log("maxYear", maxYear);
   const minYear = 1990;
   const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) =>
     (maxYear - i).toString()
@@ -487,7 +488,7 @@ export function CarDialog({
       setLoading(false);
     }
   };
-  // console.log("createdCarId:", createdCarId);
+  // //console.log("createdCarId:", createdCarId);
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };

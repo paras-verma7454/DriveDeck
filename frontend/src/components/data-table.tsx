@@ -4,6 +4,8 @@ import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+  PaginationState, // Import PaginationState
+  OnChangeFn, // Import OnChangeFn
 } from "@tanstack/react-table";
 import {
   flexRender,
@@ -11,6 +13,7 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
+  getPaginationRowModel, // Import getPaginationRowModel
 } from "@tanstack/react-table";
 
 import {
@@ -35,12 +38,25 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRefresh?: () => void;
+  loading?: boolean; // New prop for loading state
+  // Pagination props
+  pageIndex: number;
+  pageSize: number;
+  pageCount: number; // Total number of pages
+  rowCount: number; // Total number of rows
+  onPaginationChange: OnChangeFn<PaginationState>; // Updated type
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onRefresh,
+  loading, // Destructure new loading prop
+  pageIndex,
+  pageSize,
+  pageCount,
+  rowCount,
+  onPaginationChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
@@ -53,16 +69,24 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(), // Added pagination row model
     onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: onPaginationChange, // Pass external pagination handler
     state: {
       sorting,
       columnVisibility,
       columnFilters,
+      pagination: { // Pass external pagination state
+        pageIndex,
+        pageSize,
+      },
     },
+    pageCount: pageCount, // Pass total page count to table
+    manualPagination: true, // Enable manual pagination
     meta: {
       onRefresh,
     },
@@ -175,7 +199,19 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? ( // Check if loading is true
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center w-[calc(100vw-360px)]"
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="mt-2 text-muted-foreground">Fetching data...</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => {
@@ -205,6 +241,33 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} ({rowCount} items)
+        </div>
       </div>
     </div>
   );

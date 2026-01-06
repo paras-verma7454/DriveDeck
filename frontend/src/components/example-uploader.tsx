@@ -1,4 +1,5 @@
-import { ENDPOINT_URL, useUser } from "@/hooks/user";
+import { useUser } from "@/context/UserContext";
+import { ENDPOINT_URL } from "@/hooks/user";
 import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
 import axios from "axios";
 import { toast } from "sonner";
@@ -13,16 +14,15 @@ export function Upload() {
         endpoint="imageUploader"
         onClientUploadComplete={async (res) => {
           // Do something with the response
-          console.log("Files: ", res[0].ufsUrl);
+          //console.log("Files: ", res[0].ufsUrl);
           const url = res[0].ufsUrl.split("f/")[1];
 
-          console.log("url id:", url);
+          //console.log("url id:", url);
           const userId = user?.id;
-          console.log("user id:", userId);
+          // //console.log("user id:", userId);
           try {
-            const response = await axios.post(
-              `${ENDPOINT_URL}/v1/image`,
-              {
+            // const response = await axios.post(
+             await axios.post(`${ENDPOINT_URL}/v1/image`,{
                 image: url,
                 userId: userId,
               },
@@ -32,7 +32,7 @@ export function Upload() {
                 },
               }
             );
-            console.log("response:", response.data.resp.Image);
+            //console.log("response:", response.data.resp.Image);
             toast.success("Upload Completed");
             window.location.reload();
           } catch (error) {
@@ -63,12 +63,12 @@ export function Upload2({
         className="ut-button:bg-blue-400 ut-button:px-2 ut-button:mt-2"
         onClientUploadComplete={async (res) => {
           // Do something with the response
-          console.log("Files: ", res[0].ufsUrl);
+          //console.log("Files: ", res[0].ufsUrl);
           const url = res[0].ufsUrl.split("f/")[1];
 
-          console.log("url id:", url);
+          //console.log("url id:", url);
           const userId = user?.id;
-          console.log("user id:", userId);
+          // //console.log("user id:", userId);
           if (onUploadComplete) {
             onUploadComplete(url);
           }

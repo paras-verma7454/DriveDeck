@@ -9,7 +9,7 @@ import jwt  from "jsonwebtoken";
 // import { prisma } from "./client.js";
 import { createRouteHandler } from "uploadthing/express";
 import { uploadRouter, uploadRouter2 } from "./uploadthing.js";
-import { authMiddleware } from "./Middleware.js";
+import { authMiddleware, hasPermission } from "./Middleware.js";
 // import { PrismaClient } from "@prisma/client";
 import vendorRouter  from "./routes/vendor.js";
 import { prisma } from "./client.js";
@@ -32,39 +32,23 @@ app.use(Router())
 
 app.get("/v1/user",authMiddleware, async (req, res)=>{
     try {
-        const token = req.headers.authorization?.split(" ")[1] as string;
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
-        const user = await prisma.user.findUnique({
-            where:{
-                id: decoded.userId
-            }
-        })
-        const role = await prisma.role.findUnique({
-            where:{
-                id: user?.id as string
-            }
-        })
-        if(role?.roleName==="vendor"){
-            const permissions = await prisma.userPermission.findMany({
-                where:{
-                    userId: user?.id as string
-                },
-                include:{
-                    permission:true
-                }
-            })
-            return res.json({
-                success: true,
-                user: user,
-                role: role,
-                permissions: permissions.map((permission: any) => permission.permission?.key)
-            })
+        // @ts-ignore
+        const user = req.user;
+        // @ts-ignore
+        const role = req.role;
+        // @ts-ignore
+        const permissions = req.permissions;
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
         }
+
         res.json({
             success: true,
-            user: user,
-            role: role
-        })
+            user: { ...user, roleUsers: undefined }, // Clean up user object before sending
+            role: role ? { ...role, rolePermissions: undefined } : null, // Clean up role object before sending
+            permissions: permissions
+        });
     } catch (e) {
         console.error("Error fetching user:", e);
         res.status(401).json({
@@ -74,9 +58,9 @@ app.get("/v1/user",authMiddleware, async (req, res)=>{
     }
 })
 
-app.use("/v1/vendor",vendorRouter)
+app.use("/v1/vendor", vendorRouter)
 
-app.post("/v1/delete/user/:id",authMiddleware,async(req, res)=>{
+app.post("/v1/delete/user/:id", authMiddleware, hasPermission(["users.delete"]), async(req, res)=>{
     const DeleteId = req.params.id;
     try {
         // const token = req.headers.authorization?.split(" ")[1] as string;
@@ -103,20 +87,40 @@ app.post("/v1/delete/user/:id",authMiddleware,async(req, res)=>{
 })
 app.get("/v1/cars",authMiddleware,async(req, res)=>{
     try {
-        const cars = await prisma.car.findMany();
-        res.status(200).json({ success: true, cars });
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const skip = (page - 1) * pageSize;
+
+        const totalCars = await prisma.car.count();
+        const cars = await prisma.car.findMany({
+            skip: skip,
+            take: pageSize,
+        });
+        res.status(200).json({ success: true, cars, totalCars, page, pageSize });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Failed to fetch cars" });
     }
 })
 
-app.get("/v1/all/users", async (req, res) => {
+app.get("/v1/all/users", authMiddleware, hasPermission(["users.view"]), async (req, res) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const skip = (page - 1) * pageSize;
+
+        const totalUsers = await prisma.user.count({
+            where: {
+                isActive: true
+            },
+        });
+
         const users = await prisma.user.findMany({
             where: {
                 isActive: true
             },
+            skip: skip,
+            take: pageSize,
         });
 
         const userIds = users.map((user: any) => user.id);
@@ -140,7 +144,10 @@ app.get("/v1/all/users", async (req, res) => {
 
         res.json({
             success: true,
-            users: nonAdminUsers
+            users: nonAdminUsers,
+            totalUsers: totalUsers,
+            page: page,
+            pageSize: pageSize
         });
     } catch (e) {
         console.error("Error fetching users:", e);
@@ -179,73 +186,144 @@ app.use("/v1/api/uploadthing/vendor", createRouteHandler({
     }),
 );
 
-app.get("/v1/permissions",async(req,res )=>{
-    const token = req.headers.authorization?.split(" ")[1] as string;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
-    const permissions = await prisma.user.findUnique({
-        where:{
-            id: decoded.userId
-        },
-        include:{
-            userPermissions:{
-                include:{
-                    permission:true
+// Get all available permissions
+app.get("/v1/permissions", authMiddleware, hasPermission(["permissions.view"]), async (req, res) => { // Added auth and permission
+    try {
+        const allPermissions = await prisma.permission.findMany();
+        res.json({
+            success: true,
+            permissions: allPermissions
+        });
+    } catch (e) {
+        console.error("Error fetching all permissions:", e);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch all permissions"
+        });
+    }
+});
+
+// Get all roles with their assigned permissions, excluding the admin role
+app.get("/v1/roles", authMiddleware, hasPermission(["roles.view"]), async (req, res) => { // Added auth and permission
+    try {
+        const roles = await prisma.role.findMany({
+            where: {
+                roleName: {
+                    not: 'admin' // Exclude the admin role
+                }
+            },
+            include: {
+                rolePermissions: {
+                    include: {
+                        permission: true
+                    }
                 }
             }
+        });
+        res.json({
+            success: true,
+            roles: roles.map(role => ({
+                ...role,
+                permissions: role.rolePermissions.map(rp => rp.permission.key)
+            }))
+        });
+    } catch (e) {
+        console.error("Error fetching roles:", e);
+        res.status(500).json({ success: false, message: "Failed to fetch roles" });
+    }
+});
+
+// Update permissions for a specific role
+app.put("/v1/roles/:roleId/permissions", authMiddleware, hasPermission(["roles.manage"]), async (req, res) => { // Added auth and permission
+    const { roleId } = req.params;
+    const { permissions: newPermissionKeys } = req.body; // Array of permission keys
+
+    try {
+        // Find the role
+        const role = await prisma.role.findUnique({
+            where: { id: roleId }
+        });
+        if (!role) {
+            return res.status(404).json({ success: false, message: "Role not found" });
         }
-    })
-    res.json({
-      success: true,
-      permissions:permissions?.userPermissions.map((userPermission: any) => userPermission.permission?.key),
-    })
-  })
 
-app.post("/v1/permission/:vendorId",async(req,res )=>{
-    const { vendorId } = req.params
-  const { permission } = req.body
+        // Get all permission objects for the provided keys
+        const permissionObjects = await prisma.permission.findMany({
+            where: {
+                key: {
+                    in: newPermissionKeys
+                }
+            }
+        });
 
-  const perm = await prisma.permission.findUnique({
-    where: { key: permission },
-  })
+        // Delete existing role permissions
+        await prisma.rolePermission.deleteMany({
+            where: { roleId: roleId }
+        });
 
-  if (!perm) {
-    return res.status(400).json({ message: "Invalid permission" })
-  }
+        // Create new role permissions
+        await prisma.rolePermission.createMany({
+            data: permissionObjects.map(p => ({
+                roleId: roleId,
+                permissionId: p.id
+            }))
+        });
 
-  await prisma.userPermission.create({
-    data: {
-      userId: vendorId,
-      permissionId: perm.id,
-    },
-  })
+        res.json({ success: true, message: `Permissions updated for role ${role.roleName}` });
 
-  res.json({ success: true })
-})
+    } catch (e) {
+        console.error("Error updating role permissions:", e);
+        res.status(500).json({ success: false, message: "Failed to update role permissions" });
+    }
+});
 
-app.put("/v1/permission/:vendorId", async(req, res)=>{
-  const { vendorId } = req.params
-  const { permissions } = req.body
+// Create a new permission
+app.post("/v1/permissions", authMiddleware, async (req, res) => {
+    const { key } = req.body;
+    try {
+        const existingPermission = await prisma.permission.findUnique({ where: { key } });
+        if (existingPermission) {
+            return res.status(409).json({ success: false, message: "Permission with this key already exists." });
+        }
+        const permission = await prisma.permission.create({ data: { key } });
+        res.status(201).json({ success: true, message: "Permission created successfully.", permission });
+    } catch (e) {
+        console.error("Error creating permission:", e);
+        res.status(500).json({ success: false, message: "Failed to create permission." });
+    }
+});
 
-  // delete old
-  await prisma.userPermission.deleteMany({
-    where: { userId: vendorId },
-  })
+// Update an existing permission
+app.put("/v1/permissions/:id", authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { key: newKey } = req.body;
+    try {
+        const existingPermission = await prisma.permission.findUnique({ where: { key: newKey } });
+        if (existingPermission && existingPermission.id !== id) {
+            return res.status(409).json({ success: false, message: "Permission with this key already exists." });
+        }
+        const permission = await prisma.permission.update({
+            where: { id },
+            data: { key: newKey },
+        });
+        res.json({ success: true, message: "Permission updated successfully.", permission });
+    } catch (e) {
+        console.error("Error updating permission:", e);
+        res.status(500).json({ success: false, message: "Failed to update permission." });
+    }
+});
 
-  const perms = await prisma.permission.findMany({
-    where: {
-      key: { in: permissions },
-    },
-  })
-
-  const perm = await prisma.userPermission.createMany({
-    data: perms.map((p) => ({
-      userId: vendorId,
-      permissionId: p.id,
-    })),
-  })
-
-  res.json({ success: true })
-})
+// Delete a permission
+app.delete("/v1/permissions/:id", authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await prisma.permission.delete({ where: { id } });
+        res.json({ success: true, message: "Permission deleted successfully." });
+    } catch (e) {
+        console.error("Error deleting permission:", e);
+        res.status(500).json({ success: false, message: "Failed to delete permission." });
+    }
+});
 
 app.post("/v1/image",authMiddleware,async (req, res)=>{
     const {image,userId}= req.body;

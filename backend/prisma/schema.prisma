@@ -14,9 +14,10 @@ datasource db {
 }
 
 model Role {
-  id        String      @id
-  roleName  String
-  roleUsers RoleUsers[]
+  id              String           @id
+  roleName        String           @unique
+  roleUsers       RoleUsers[]
+  rolePermissions RolePermission[]
 }
 
 model RoleUsers {
@@ -45,24 +46,22 @@ model User {
   Pincode     String
   cars        Car[]
   roleUsers   RoleUsers[]
-  userPermissions UserPermission[]
 }
 
 model Permission {
-  id   String @id @default(uuid())
-  key  String @unique // cars.create, cars.edit, cars.delete
-  userPermissions UserPermission[]
+  id              String           @id @default(uuid())
+  key             String           @unique // cars.create, cars.edit, cars.delete
+  rolePermissions RolePermission[]
 }
 
-model UserPermission {
-  id           String @id @default(uuid())
-  userId       String
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
   permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, permissionId])
+  @@unique([roleId, permissionId])
 }
 
 

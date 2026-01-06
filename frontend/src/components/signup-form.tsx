@@ -136,7 +136,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         Country: selectedCountry ? selectedCountry.name : "",
         Pincode: pincode,
       });
-      console.log(response.data);
+      //console.log(response.data);
 
       if (response.data.token) {
         localStorage.setItem("Authorization", `Bearer ${response.data.token}`);
