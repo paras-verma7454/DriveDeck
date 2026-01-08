@@ -80,13 +80,13 @@ const Roles = () => {
       // Fetch all roles and filter out 'admin' role (defense-in-depth)
       const rolesResponse = await axios.get(`${ENDPOINT_URL}/v1/roles`, { headers });
       const fetchedRoles: Role[] = rolesResponse.data.roles.filter((role: Role) => role.roleName !== 'admin');
-      setRoles(fetchedRoles);
-
+      
       // Fetch all available permissions and filter out excluded ones
       const permissionsResponse = await axios.get(`${ENDPOINT_URL}/v1/permissions`, { headers });
       const fetchedAllPermissions: Permission[] = permissionsResponse.data.permissions;
       const filteredPermissions = fetchedAllPermissions.filter(p => !permissionsToExclude.includes(p.key));
       
+      setRoles(fetchedRoles);
       setAllPermissions(filteredPermissions);
 
       // Initialize selected permissions state
@@ -100,6 +100,7 @@ const Roles = () => {
       setSelectedPermissions(initialSelectedPermissions);
 
     } catch (err:any) {
+      if (axios.isCancel(err)) return;
       console.error("Failed to fetch roles or permissions:", err);
       setError(err.message || "An unexpected error occurred.");
     } finally {

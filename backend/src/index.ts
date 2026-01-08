@@ -12,6 +12,7 @@ import { uploadRouter, uploadRouter2 } from "./uploadthing.js";
 import { authMiddleware, hasPermission } from "./Middleware.js";
 // import { PrismaClient } from "@prisma/client";
 import vendorRouter  from "./routes/vendor.js";
+import { getCarById, suggestCar } from "./controllers/car.js";
 import { prisma } from "./client.js";
 import { carsDB } from "./cars_database.js";
 
@@ -85,7 +86,7 @@ app.post("/v1/delete/user/:id", authMiddleware, hasPermission(["users.delete"]),
         });
     }
 })
-app.get("/v1/cars",authMiddleware,async(req, res)=>{
+app.get("/v1/cars",async(req, res)=>{
     try {
         const page = parseInt(req.query.page as string) || 1;
         const pageSize = parseInt(req.query.pageSize as string) || 10;
@@ -102,6 +103,10 @@ app.get("/v1/cars",authMiddleware,async(req, res)=>{
         res.status(500).json({ success: false, message: "Failed to fetch cars" });
     }
 })
+
+app.get("/v1/cars/:id", getCarById);
+
+app.get("/v1/cars/suggest/:vehicleType/:excludeId/:limit", suggestCar);
 
 app.get("/v1/all/users", authMiddleware, hasPermission(["users.view"]), async (req, res) => {
     try {

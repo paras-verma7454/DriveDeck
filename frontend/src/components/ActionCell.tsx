@@ -8,15 +8,16 @@ interface ActionCellProps {
   onDelete: (car: Car) => void;
   userPermissions: string[]; // New prop
   userLoading: boolean;      // New prop
+  role: string;
 }
 
-const ActionCell = ({ car, onEdit, onDelete, userPermissions, userLoading }: ActionCellProps) => { // New props
+const ActionCell = ({ car, onEdit, onDelete, userPermissions, userLoading, role }: ActionCellProps) => { // New props
 
   if (userLoading) return null; // Use userLoading
 
   return (
     <div className="flex items-center space-x-2">
-      {userPermissions && userPermissions.includes("cars.edit") && ( // Use userPermissions
+      {((userPermissions && userPermissions.includes("cars.edit")) || role === "admin") && ( // Use userPermissions
         <Button
           className="cursor-pointer hover:text-blue-400"
           variant="ghost"
@@ -27,7 +28,7 @@ const ActionCell = ({ car, onEdit, onDelete, userPermissions, userLoading }: Act
           <span className="sr-only">Edit car</span>
         </Button>
       )}
-      {userPermissions && userPermissions.includes("cars.delete") && ( // Use userPermissions
+      {((userPermissions && userPermissions.includes("cars.delete")) || role === "admin") && ( // Use userPermissions
         <Button
           className="cursor-pointer text-red-600 hover:text-red-700"
           variant="ghost"

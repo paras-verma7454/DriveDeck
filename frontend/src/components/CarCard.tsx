@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 // import { Badge } from "@/components/ui/badge";   
 import { Eye, Fuel, Gauge, Calendar, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { LoaderOneDemo } from "./LoaderOne";
 
 interface Car {
   id: string;
@@ -44,6 +46,7 @@ const CarCard = () => {
         const carList = data.cars || (Array.isArray(data) ? data : []);
         setCars(carList);
       } catch (error) {
+        if (axios.isCancel(error)) return;
         console.error("Error fetching cars:", error);
       } finally {
         setLoading(false);
@@ -54,15 +57,16 @@ const CarCard = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
+      <div className="flex justify-center items-center h-screen">
+      {/* <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div> */}
+      <LoaderOneDemo/>
+       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6">
-      {/* <div className="flex items-center justify-between mb-8">
+    <div className="container mx-auto   py-6 ">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             Featured Vehicles
@@ -71,7 +75,7 @@ const CarCard = () => {
             Discover your next dream car from our curated collection.
           </p>
         </div>
-      </div> */}
+      </div>
 
       {cars.length === 0 ? (
         <div className="text-center py-20">
@@ -80,7 +84,7 @@ const CarCard = () => {
           </p>
         </div>
       ) : (
-        <div className="grid w-350 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid w-340 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {cars.map((car) => (
             <SingleCarCard key={car.id} car={car} />
           ))}
@@ -90,7 +94,8 @@ const CarCard = () => {
   );
 };
 
-const SingleCarCard = ({ car }: { car: Car }) => {
+export const SingleCarCard = ({ car }: { car: Car }) => {
+  const navigate = useNavigate();
   // Construct image URL safely
   const getImageUrl = (imagePath: string | null | undefined) => {
     if (!imagePath) return "https://placehold.co/600x400?text=No+Image";
@@ -119,7 +124,7 @@ const SingleCarCard = ({ car }: { car: Car }) => {
         />
       </div>
 
-      <CardHeader className="px-4">
+      <CardHeader className="px-4 -mt-4">
         <div className="flex justify-between items-start gap-2">
           <CardTitle
             className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1"
@@ -133,7 +138,7 @@ const SingleCarCard = ({ car }: { car: Car }) => {
         </p>
       </CardHeader>
 
-      <CardContent className="px-4 grow">
+      <CardContent className="px-4 grow -mt-4">
         <div className="flex items-baseline gap-1 mb-4">
           <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {car.price < 100000 ? (
@@ -146,7 +151,7 @@ const SingleCarCard = ({ car }: { car: Car }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
+        {/* <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded transition-colors group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20">
             <Fuel size={14} className="text-indigo-500 dark:text-indigo-400" />
             <span className="truncate">{car.fuelType || "N/A"}</span>
@@ -168,11 +173,14 @@ const SingleCarCard = ({ car }: { car: Car }) => {
             />
             <span className="truncate">{car.year}</span>
           </div>
-        </div>
+        </div> */}
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 mt-auto">
-        <Button className="w-full bg-slate-900 cursor-pointer hover:bg-indigo-600 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-all duration-300 shadow-lg shadow-indigo-500/20">
+      <CardFooter className="px-4 -mt-7">
+        <Button 
+          className="w-full bg-slate-900 cursor-pointer hover:bg-indigo-600 text-white dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-all duration-300 shadow-lg shadow-indigo-500/20"
+          onClick={() => navigate(`/cars/${car.id}`)}
+        >
           <Eye className="w-4 h-4 mr-2" />
           View Now
         </Button>

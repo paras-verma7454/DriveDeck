@@ -38,7 +38,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await axios.get(`${ENDPOINT_URL}/v1/user`, {
         headers: {
           authorization: `${token}`
-        }
+        },
       });
 
       const data = response.data;
@@ -48,6 +48,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setRoleData(data.role?.roleName || '');
       }
     } catch (error) {
+      if (axios.isCancel(error)) return;
       console.error("Failed to fetch user data:", error);
       // On error, assume user is not logged in or session is invalid
       setUserData(null);

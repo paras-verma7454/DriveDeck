@@ -165,3 +165,56 @@ export const deleteCar = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "Failed to delete car" });
   }
 };
+
+export const getCarById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const car = await prisma.car.findUnique({
+      where: { id: id as string },
+      include: {
+        vendor: {
+          select: {
+            FirstName: true,
+            LastName: true,
+            Email: true,
+            PhoneNumber: true,
+            City: true,
+            State: true,
+            Image: true
+          }
+        }
+      }
+    });
+
+    if (!car) {
+      return res.status(404).json({ success: false, message: "Car not found" });
+    }
+
+    res.status(200).json({ success: true, car });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to fetch car details" });
+  }
+};
+
+export const suggestCar = async (req: Request, res: Response) => {
+  try {
+    const { vehicleType, excludeId, limit } = req.params;
+    // console.log("vehicleType", vehicleType);
+    // console.log("excludeId", excludeId);
+    // console.log("limit", limit);
+    const cars = await prisma.car.findMany({
+      where: {
+        vehicleType: vehicleType as string,
+        id: {
+          not: excludeId as string,
+        },
+      },
+      take: limit ? Number(limit) : 6,
+    });
+    res.status(200).json({ success: true, suggestedCars: cars });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to fetch cars" });
+  }
+};

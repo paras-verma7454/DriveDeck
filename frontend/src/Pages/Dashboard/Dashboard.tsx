@@ -50,6 +50,7 @@ const Dashboard = () => {
         throw new Error(data.message || "Unexpected response");
       }
     } catch (e) {
+      if (axios.isCancel(e)) return;
       console.error(e);
       setError(e instanceof Error ? e.message : String(e));
       toast.error("Unable to load users");

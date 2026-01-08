@@ -73,10 +73,15 @@ export const VendorDashboard = () => {
         throw new Error(data.message || "Unexpected response");
       }
     } catch (e:any) {
-      console.error(e.response.data.message);
-      // setError(e instanceof Error ? e.message : String(e));
-      setError(e.response.data.message);
-      toast.error(e.response.data.message.split(":")[1]);
+      if (axios.isCancel(e)) return;
+      console.error(e.response?.data?.message || e.message);
+      setError(e.response?.data?.message || e.message);
+      const msg = e.response?.data?.message || "";
+      if (msg.includes(":")) {
+        toast.error(msg.split(":")[1]);
+      } else {
+        toast.error("Failed to fetch cars");
+      }
     }
   };
 
@@ -121,13 +126,14 @@ export const VendorDashboard = () => {
     onDelete: handleDeleteCar,
     userPermissions: userPermissions,
     userLoading: userLoading,
-  }), [handleEditCar, handleDeleteCar, userPermissions, userLoading]);
+    role: role,
+  }), [handleEditCar, handleDeleteCar, userPermissions, userLoading, role]);
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">My Cars</h2>
-        {userPermissions.includes("cars.create") && <Button className="cursor-pointer" onClick={handleAddCar}>
+        {(userPermissions.includes("cars.create") || role === "admin") && <Button className="cursor-pointer" onClick={handleAddCar}>
           Add New Car
         </Button>}
       </div>
@@ -164,7 +170,7 @@ export const VendorDashboard = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle></AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the car
               from your inventory.

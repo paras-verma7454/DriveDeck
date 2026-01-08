@@ -37,6 +37,7 @@ export function  SectionCards() {
                 setUsers(usersData.data.users.length);
                 setLoading(false);
             } catch (error) {
+                if (axios.isCancel(error)) return;
                 console.error("Error fetching cars:", error);
                 // Handle error appropriately, e.g., set an error state
             }

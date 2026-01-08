@@ -72,6 +72,7 @@ interface CarColumnsProps {
   onDelete: (car: Car) => void;
   userPermissions: string[];
   userLoading: boolean;
+  role: string;
 }
 
 export const getCarColumns = ({
@@ -79,6 +80,7 @@ export const getCarColumns = ({
   onDelete,
   userPermissions,
   userLoading,
+  role,
 }: CarColumnsProps): ColumnDef<Car>[] => [
   {
     accessorKey: "brand",
@@ -192,7 +194,7 @@ export const getCarColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const car = row.original;
-      return <ActionCell car={car} onEdit={onEdit} onDelete={onDelete} userPermissions={userPermissions} userLoading={userLoading} />;
+      return <ActionCell car={car} onEdit={onEdit} onDelete={onDelete} userPermissions={userPermissions} userLoading={userLoading} role={role} />;
     },
   },
 ];

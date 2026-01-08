@@ -15,6 +15,7 @@ const Signup = lazy(() => import("./Pages/Signup"));
 const Home = lazy(() => import("./Pages/Dashboard/Home"));
 const Dashboard = lazy(() => import("./Pages/Dashboard/Dashboard"));
 const Account = lazy(() => import("./Pages/Dashboard/Account"));
+const CarDetails = lazy(() => import("./Pages/CarDetails"));
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,9 @@ const router = createBrowserRouter([
   {
     path: "/cars",
     element: <CarCard />,
+  },{
+    path:"/cars/:carId",
+    element: <CarDetails />,
   },
   {
     path: "/dashboard",
@@ -50,9 +54,6 @@ const router = createBrowserRouter([
         element: <Account />,
       },{
         path: "/dashboard/cars",  
-        element: <Cars />,
-      },{
-        path: "/dashboard/cars/:userCarsId",
         element: <Cars />,
       },{
         path: "/dashboard",

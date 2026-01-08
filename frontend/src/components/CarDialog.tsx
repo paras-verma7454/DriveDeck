@@ -168,7 +168,6 @@ export function CarDialog({
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
     const fetchModels = async () => {
       if (!formData.brand) {
         setModels([]);
@@ -176,8 +175,7 @@ export function CarDialog({
       }
       try {
         const response = await axios.get(
-          `${ENDPOINT_URL}/v1/car/models/${formData.brand}`,
-          { signal: controller.signal }
+          `${ENDPOINT_URL}/v1/car/models/${formData.brand}`
         );
         if (response.data.success) {
           setModels(response.data.models);
@@ -189,7 +187,6 @@ export function CarDialog({
       }
     };
     fetchModels();
-    return () => controller.abort();
   }, [formData.brand]);
 
   useEffect(() => {
