@@ -54,7 +54,7 @@ export function Upload2({
 }: {
   onUploadComplete?: (url: string) => void;
 }) {
-  const { user } = useUser();
+  //const { user } = useUser();
 
   return (
     <main className="">
@@ -67,7 +67,7 @@ export function Upload2({
           const url = res[0].ufsUrl.split("f/")[1];
 
           //console.log("url id:", url);
-          const userId = user?.id;
+          // const userId = user?.id;
           // //console.log("user id:", userId);
           if (onUploadComplete) {
             onUploadComplete(url);

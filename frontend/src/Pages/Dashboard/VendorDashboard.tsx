@@ -72,10 +72,11 @@ export const VendorDashboard = () => {
       } else {
         throw new Error(data.message || "Unexpected response");
       }
-    } catch (e) {
-      console.error(e);
-      setError(e instanceof Error ? e.message : String(e));
-      toast.error("Unable to load cars");
+    } catch (e:any) {
+      console.error(e.response.data.message);
+      // setError(e instanceof Error ? e.message : String(e));
+      setError(e.response.data.message);
+      toast.error(e.response.data.message.split(":")[1]);
     }
   };
 

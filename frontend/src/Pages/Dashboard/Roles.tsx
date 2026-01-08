@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Pencil, Trash } from "lucide-react"; // Added Pencil, Trash
 import { toast } from "sonner";
-import { useUser } from "@/context/UserContext"; // Import useUser from context
+// import { useUser } from "@/context/UserContext"; // Import useUser from context
 import {
   Dialog,
   DialogContent,
@@ -44,7 +44,7 @@ interface Role {
 }
 
 const Roles = () => {
-  const { permissions: userPermissions } = useUser(); // Get user permissions
+ // const { permissions: userPermissions } = useUser(); // Get user permissions
   const [roles, setRoles] = useState<Role[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
